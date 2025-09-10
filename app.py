@@ -1,4 +1,4 @@
-# app.py  — vollständige Version mit Ampel-Anzeige
+# app.py — vollständige Version (Logo größer + Ampel + PDF-Export)
 
 import streamlit as st
 from PIL import Image
@@ -8,7 +8,7 @@ from logic.report import create_report
 # ---------- Seiteneinstellungen ----------
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=None,        # Optional: "assets/logo.png"
+    page_icon=None,        # optional: "assets/Logo.png"
     layout="centered"
 )
 
@@ -17,8 +17,9 @@ col_logo, col_title = st.columns([1, 5])
 
 with col_logo:
     try:
-        logo = Image.open("assets/Logo.png")  # oder "assets/logo.png" je nach Dateiname
-        st.image(logo, use_container_width=False, width=120)
+        # Logo deutlich größer anzeigen
+        logo = Image.open("assets/Logo.png")  # ggf. auf "assets/logo.png" anpassen
+        st.image(logo, width=220, use_container_width=False)
     except Exception:
         st.caption("")
 
@@ -80,7 +81,7 @@ if st.button("Prüfen"):
     for t in result.get("tasks", []):
         st.write("•", t)
 
-    # PDF-Export (Logo wird in create_report berücksichtigt)
+    # PDF-Export
     pdf = create_report(result)
     st.download_button(
         "📄 Ergebnis als PDF herunterladen",
