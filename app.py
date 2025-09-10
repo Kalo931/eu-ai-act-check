@@ -1,17 +1,17 @@
 import streamlit as st
-from Logik.rules import assess   # passt zu deinem Ordner "Logik"
+from logic.rules import assess   # Ordner "logic"
 
 # Seitenkonfiguration
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon="Vermögenswerte/logo.png",  # Logo auch als Favicon (optional)
+    page_icon="assets/logo.png",  # Logo auch als Favicon
     layout="centered"
 )
 
-# Logo + Titel nebeneinander
+# Logo + Titel
 col_logo, col_title = st.columns([1, 5])
 with col_logo:
-    st.image("Vermögenswerte/logo.png", width=80)  # dein Logo aus dem Ordner "Vermögenswerte"
+    st.image("assets/logo.png", width=80)  # Ordner "assets"
 with col_title:
     st.title("EU AI Act Quick-Check")
     st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
