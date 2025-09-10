@@ -1,24 +1,47 @@
 import streamlit as st
 from PIL import Image
+from pathlib import Path
+
 from logic.rules import assess
 from logic.report import create_report
 
+# ----------------------------------------
+# Hilfsfunktion: Logo finden (unabhängig von Groß/Kleinschreibung)
+# ----------------------------------------
+def load_logo():
+    candidates = [
+        Path("assets/logo.png"),
+        Path("assets/Logo.png"),
+        Path("assets/logo.jpg"),
+        Path("assets/Logo.jpg"),
+        Path("assets/logo.jpeg"),
+        Path("assets/Logo.jpeg"),
+    ]
+    for p in candidates:
+        if p.exists():
+            try:
+                return Image.open(p), str(p)  # Bild + Pfad zurückgeben
+            except Exception:
+                continue
+    return None, None
+
 # Seitenkonfiguration
+_, logo_path = load_logo()
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=None,  # Optional: "assets/logo.png"
+    page_icon=logo_path if logo_path else None,  # Favicon nur setzen, wenn vorhanden
     layout="centered"
 )
 
 # ---------- Branding: Logo + Titel ----------
 col_logo, col_title = st.columns([1, 5])
-
 with col_logo:
-    try:
-        logo = Image.open("assets/logo.png")
-        st.image(logo, width=80)
-    except Exception:
-        st.caption(" ")  # Platzhalter, falls kein Logo vorhanden ist
+    logo_img, _ = load_logo()
+    if logo_img:
+        # Für breite Banner lieber die ganze Spalte nutzen:
+        st.image(logo_img, use_column_width=True)
+    else:
+        st.caption(" ")  # Platzhalter
 
 with col_title:
     st.title("EU AI Act Quick-Check")
@@ -58,6 +81,7 @@ if st.button("Prüfen"):
         logging=logging,
         genai_label=genai_label
     )
+
     st.subheader(f"Ergebnis: {result['risk']}")
     st.write("**Begründung:**", "; ".join(result["reasons"]) or "Kontrollen wirken ausreichend.")
     st.write("**Nächste Schritte:**")
@@ -84,3 +108,4 @@ st.markdown("""
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
+
