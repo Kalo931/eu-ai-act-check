@@ -1,33 +1,29 @@
-# app.py — zentriertes, großes Logo + Ampel + PDF
+# app.py — zentriertes, größeres Logo + Quick-Check
 
 import streamlit as st
 from pathlib import Path
 from logic.rules import assess
 from logic.report import create_report
 
-# ---------- Seiteneinstellungen ----------
-# Falls dein Logo-Name anders ist, unten im "find_logo()" anpassen
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=None,   # optional: setze hier str(find_logo()) falls du ein Favicon willst
+    page_icon=None,
     layout="centered"
 )
 
 def find_logo():
-    """Liefert den existierenden Logopfad (Logo.png oder logo.png) oder None."""
     for p in [Path("assets/Logo.png"), Path("assets/logo.png")]:
         if p.exists():
             return p
     return None
 
-# ---------- Branding: Logo + Titel ----------
+# ---------- Branding ----------
 logo_path = find_logo()
-# Mittels 3-Spalten-Layout das Logo sauber zentrieren
 if logo_path:
-    col_l, col_c, col_r = st.columns([1, 2, 1])
+    # Drei Spalten, Logo in der Mitte
+    col_l, col_c, col_r = st.columns([1, 3, 1])
     with col_c:
-        # Breite nach Bedarf anpassen (z. B. 260-320)
-        st.image(str(logo_path), width=260)
+        st.image(str(logo_path), width=400)  # << hier kannst du die Größe ändern (z. B. 300, 350, 400)
 else:
     st.write("")
 
@@ -43,7 +39,7 @@ st.markdown(
 
 st.write("")
 
-# ---------- Eingabefelder ----------
+# ---------- Eingaben ----------
 is_ai = st.radio("Ist es ein KI-System?", ["Nein", "Ja"])
 use_case = st.selectbox("Einsatzbereich", [
     "Bildung", "HR/Bewerbung", "Kredit/Finanzen",
@@ -61,7 +57,7 @@ human_oversight = st.checkbox("Menschliche Aufsicht geregelt")
 logging = st.checkbox("Protokollierung aktiviert")
 genai_label = st.checkbox("GenAI-Inhalte gekennzeichnet")
 
-# ---------- Auswertung & Anzeige ----------
+# ---------- Auswertung ----------
 if st.button("Prüfen"):
     result = assess(
         is_ai=(is_ai == "Ja"),
@@ -78,7 +74,6 @@ if st.button("Prüfen"):
 
     risk = result.get("risk", "").strip()
 
-    # Ampel-Heading
     if risk.lower().startswith("hoch"):
         st.markdown("## 🔴 Hohes Risiko")
         st.error("Das System fällt in eine hohe Risikoklasse. Unbedingt rechtliche Beratung und Maßnahmen erforderlich!")
@@ -89,14 +84,12 @@ if st.button("Prüfen"):
         st.markdown("## 🟢 Niedriges Risiko")
         st.info("Das System ist weitgehend unkritisch. Behalten Sie gesetzliche Änderungen im Blick.")
 
-    # Details
     st.write("**Begründung:**", "; ".join(result.get("reasons", [])) or "Kontrollen wirken ausreichend.")
     st.write("**Nächste Schritte:**")
     for t in result.get("tasks", []):
         st.write("•", t)
 
-    # ---------- PDF-Export ----------
-    pdf = create_report(result)  # report.py findet das Logo selbst
+    pdf = create_report(result)
     st.download_button(
         "📄 Ergebnis als PDF herunterladen",
         data=pdf,
@@ -107,9 +100,9 @@ if st.button("Prüfen"):
     st.divider()
     st.markdown("""
     ### Ampel-Legende
-    - 🟢 **Grün**: Niedriges Risiko – keine oder wenige Vorgaben  
-    - 🟡 **Gelb**: Mittleres Risiko – Anforderungen prüfen und ggf. nachrüsten  
-    - 🔴 **Rot**: Hohes Risiko – strenge Vorgaben, rechtliche Beratung nötig
+    - 🟢 **Grün**: Niedriges Risiko  
+    - 🟡 **Gelb**: Mittleres Risiko  
+    - 🔴 **Rot**: Hohes Risiko
     """)
 
 # ---------- Footer ----------
@@ -122,3 +115,4 @@ st.markdown("""
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
+
