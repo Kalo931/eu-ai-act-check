@@ -2,51 +2,30 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
+from reportlab.lib import colors
 from pathlib import Path
 from PIL import Image as PILImage
 import io
 
-
 def _load_logo_scaled(max_width_pts: float):
-    """
-    Lädt das Logo, skaliert es proportional auf max_width_pts (Punkte) herunter
-    und gibt ein reportlab Image-Flowable zurück (oder None).
-    """
-    # Kandidaten (Groß-/Kleinschreibung)
     candidates = [
         Path("assets/logo.png"),
         Path("assets/Logo.png"),
         Path("assets/logo.jpg"),
         Path("assets/Logo.jpg"),
-        Path("assets/logo.jpeg"),
-        Path("assets/Logo.jpeg"),
     ]
     path = next((p for p in candidates if p.exists()), None)
     if not path:
         return None
 
     try:
-        # Originalgröße in Pixel lesen
         with PILImage.open(path) as im:
             w_px, h_px = im.size
+            dpi = im.info.get("dpi", (72, 72))[0] or 72
 
-        # ReportLab benutzt Punkte (1 pt ≈ 1/72 Zoll)
-        # Wir wollen das Bild *proportional* bis max_width_pts skalieren
-        # und dabei die Höhe passend mitskalieren (kein "Quetschen").
-        # Grundlage: DPI – wenn nicht gesetzt, nehmen wir 72 dpi als Fallback.
-        dpi = 72
-        # Manche Bilder haben DPI in info
-        if "dpi" in im.info and isinstance(im.info["dpi"], tuple):
-            try:
-                dpi = im.info["dpi"][0] or 72
-            except Exception:
-                dpi = 72
-
-        # Pixel -> Punkte umrechnen
         w_pt = (w_px / dpi) * 72
         h_pt = (h_px / dpi) * 72
 
-        # Falls zu breit: proportional verkleinern
         scale = 1.0
         if w_pt > max_width_pts:
             scale = max_width_pts / w_pt
@@ -57,63 +36,63 @@ def _load_logo_scaled(max_width_pts: float):
         img = Image(str(path))
         img.drawWidth = draw_w
         img.drawHeight = draw_h
-        img.hAlign = "CENTER"  # zentriert
+        img.hAlign = "CENTER"
         return img
     except Exception:
         return None
 
-
-def create_report(result: dict) -> bytes:
-    """
-    Erstellt einen PDF-Report mit Logo (proportional skaliert) und Assessment-Ergebnis.
-    Gibt ein Byte-Objekt zurück, das Streamlit direkt zum Download anbieten kann.
-    """
+def create_report(result: dict, impressum_url: str, datenschutz_url: str, contact_email: str) -> bytes:
     buffer = io.BytesIO()
-
-    # Dokument mit angenehmen Rändern
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
         leftMargin=15 * mm,
         rightMargin=15 * mm,
         topMargin=15 * mm,
-        bottomMargin=15 * mm,
+        bottomMargin=18 * mm,
     )
 
     styles = getSampleStyleSheet()
+    normal = styles["Normal"]
+    h2 = styles["Heading2"]
     story = []
 
-    # ----- Logo (breit & proportional) -----
-    # verfügbare Breite des Inhaltsbereichs
-    available_width = doc.width  # A4 minus Ränder
-    logo_flowable = _load_logo_scaled(available_width)
-    if logo_flowable:
-        story.append(logo_flowable)
+    logo_flow = _load_logo_scaled(doc.width)
+    if logo_flow:
+        story.append(logo_flow)
         story.append(Spacer(1, 8 * mm))
 
-    # ----- Titel -----
     story.append(Paragraph("EU AI Act Quick-Check", styles["Title"]))
     story.append(Spacer(1, 4 * mm))
 
-    # ----- Ergebnis -----
-    story.append(Paragraph(f"<b>Ergebnis:</b> {result['risk']}", styles["Normal"]))
+    story.append(Paragraph(f"<b>Ergebnis:</b> {result['risk']}", normal))
     story.append(Spacer(1, 4 * mm))
 
-    # ----- Begründungen -----
-    story.append(Paragraph("<b>Begründungen:</b>", styles["Heading2"]))
+    story.append(Paragraph("<b>Begründungen:</b>", h2))
     if result.get("reasons"):
         for r in result["reasons"]:
-            story.append(Paragraph(f"• {r}", styles["Normal"]))
+            story.append(Paragraph(f"• {r}", normal))
     else:
-        story.append(Paragraph("Keine besonderen Risiken.", styles["Normal"]))
+        story.append(Paragraph("Keine besonderen Risiken.", normal))
     story.append(Spacer(1, 4 * mm))
 
-    # ----- Nächste Schritte -----
-    story.append(Paragraph("<b>Nächste Schritte:</b>", styles["Heading2"]))
+    story.append(Paragraph("<b>Nächste Schritte:</b>", h2))
     for t in result.get("tasks", []):
-        story.append(Paragraph(f"• {t}", styles["Normal"]))
+        story.append(Paragraph(f"• {t}", normal))
 
-    # PDF erzeugen
+    story.append(Spacer(1, 10 * mm))
+
+    link_color = colors.HexColor("#2563EB")
+    story.append(Paragraph(
+        f"""<font size=9>
+        © 2025 KN-AI-Solutions ·
+        <link href="{impressum_url}" color="{link_color}">Impressum</link> ·
+        <link href="{datenschutz_url}" color="{link_color}">Datenschutz</link> ·
+        Kontakt: <link href="mailto:{contact_email}" color="{link_color}">{contact_email}</link>
+        </font>""",
+        normal
+    ))
+
     doc.build(story)
     pdf = buffer.getvalue()
     buffer.close()
