@@ -6,7 +6,7 @@ from logic.rules import assess
 from logic.report import create_report
 
 # ----------------------------------------
-# Hilfsfunktion: Logo finden (unabhängig von Groß/Kleinschreibung)
+# Hilfsfunktion: Logo finden
 # ----------------------------------------
 def load_logo():
     candidates = [
@@ -14,37 +14,29 @@ def load_logo():
         Path("assets/Logo.png"),
         Path("assets/logo.jpg"),
         Path("assets/Logo.jpg"),
-        Path("assets/logo.jpeg"),
-        Path("assets/Logo.jpeg"),
     ]
     for p in candidates:
         if p.exists():
             try:
-                return Image.open(p), str(p)  # Bild + Pfad zurückgeben
+                return Image.open(p)
             except Exception:
                 continue
-    return None, None
+    return None
 
 # Seitenkonfiguration
-_, logo_path = load_logo()
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=logo_path if logo_path else None,
+    page_icon="assets/Logo.png",
     layout="centered"
 )
 
-# ---------- Branding: Logo + Titel ----------
-col_logo, col_title = st.columns([2, 5])
-with col_logo:
-    logo_img, _ = load_logo()
-    if logo_img:
-        st.image(logo_img, use_container_width=True)
-    else:
-        st.caption(" ")  # Platzhalter
+# ---------- Branding ----------
+logo_img = load_logo()
+if logo_img:
+    st.image(logo_img, use_container_width=True)  # jetzt breit zentriert
 
-with col_title:
-    st.title("EU AI Act Quick-Check")
-    st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
+st.title("EU AI Act Quick-Check")
+st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
 
 st.write("")
 
@@ -101,9 +93,11 @@ st.divider()
 # ---------- Footer ----------
 st.markdown("""
 <hr/>
-<div style='font-size: 13px; color:#64748B;'>
-  © 2025 KN-AI-Solutions · <a href='https://deine-domain.de/impressum' target='_blank'>Impressum</a> ·
+<div style='font-size: 13px; color:#64748B; text-align:center;'>
+  © 2025 KN-AI-Solutions · 
+  <a href='https://deine-domain.de/impressum' target='_blank'>Impressum</a> ·
   <a href='https://deine-domain.de/datenschutz' target='_blank'>Datenschutz</a> ·
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
+
