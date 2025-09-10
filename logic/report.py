@@ -6,9 +6,8 @@ import io
 def create_report(result: dict) -> bytes:
     """
     Erstellt einen PDF-Report basierend auf dem Ergebnis des Assessments.
-    Gibt ein Byte-Objekt zurück, das direkt von Streamlit zum Download angeboten werden kann.
+    Gibt ein Byte-Objekt zurück, das Streamlit direkt zum Download anbieten kann.
     """
-
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
@@ -41,3 +40,4 @@ def create_report(result: dict) -> bytes:
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
+
