@@ -29,17 +29,16 @@ def load_logo():
 _, logo_path = load_logo()
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=logo_path if logo_path else None,  # Favicon nur setzen, wenn vorhanden
+    page_icon=logo_path if logo_path else None,
     layout="centered"
 )
 
 # ---------- Branding: Logo + Titel ----------
-col_logo, col_title = st.columns([1, 5])
+col_logo, col_title = st.columns([2, 5])
 with col_logo:
     logo_img, _ = load_logo()
     if logo_img:
-        # Für breite Banner lieber die ganze Spalte nutzen:
-        st.image(logo_img, use_column_width=True)
+        st.image(logo_img, use_container_width=True)
     else:
         st.caption(" ")  # Platzhalter
 
@@ -108,4 +107,3 @@ st.markdown("""
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
-
