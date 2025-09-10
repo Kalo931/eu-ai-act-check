@@ -1,31 +1,26 @@
-# app.py — vollständige Version (Logo größer + Ampel + PDF-Export)
-
 import streamlit as st
 from PIL import Image
 from logic.rules import assess
 from logic.report import create_report
 
-# ---------- Seiteneinstellungen ----------
+# Seitenkonfiguration
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=None,        # optional: "assets/Logo.png"
+    page_icon="assets/Logo.png",
     layout="centered"
 )
 
 # ---------- Branding: Logo + Titel ----------
-col_logo, col_title = st.columns([1, 5])
-
-with col_logo:
-    try:
-        # Logo deutlich größer anzeigen
-        logo = Image.open("assets/Logo.png")  # ggf. auf "assets/logo.png" anpassen
-        st.image(logo, width=220, use_container_width=False)
-    except Exception:
-        st.caption("")
-
-with col_title:
-    st.title("EU AI Act Quick-Check")
-    st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
+st.markdown(
+    """
+    <div style="text-align:center;">
+        <img src="app/assets/Logo.png" alt="Logo" style="width:200px; margin-bottom:15px;">
+        <h1>EU AI Act Quick-Check</h1>
+        <p style="color:gray;">Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 st.write("")
 
@@ -47,7 +42,7 @@ human_oversight = st.checkbox("Menschliche Aufsicht geregelt")
 logging = st.checkbox("Protokollierung aktiviert")
 genai_label = st.checkbox("GenAI-Inhalte gekennzeichnet")
 
-# ---------- Auswertung & Anzeige (mit Ampel) ----------
+# ---------- Auswertung ----------
 if st.button("Prüfen"):
     result = assess(
         is_ai=(is_ai == "Ja"),
@@ -62,27 +57,22 @@ if st.button("Prüfen"):
         genai_label=genai_label
     )
 
-    risk = result.get("risk", "").strip()
-
-    # Ampel-Heading + Hinweisboxen
-    if risk.lower().startswith("niedrig"):
-        st.markdown("## 🟢 Niedriges Risiko")
-        st.info("Das System ist weitgehend unkritisch. Behalten Sie gesetzliche Änderungen im Blick.")
-    elif risk.lower().startswith("mittel"):
-        st.markdown("## 🟡 Mittleres Risiko")
-        st.warning("Es bestehen einige Anforderungen. Bitte prüfen Sie die Pflichten nach EU AI Act genauer.")
+    # Ergebnisanzeige mit farbigem Ampelsystem
+    if result['risk'] == "Hoch":
+        st.error("🔴 Das System fällt in eine hohe Risikoklasse. Unbedingt rechtliche Beratung und Maßnahmen erforderlich!")
+    elif result['risk'] == "Mittel":
+        st.warning("🟠 Das System hat mittleres Risiko. Zusätzliche Kontrollen empfohlen.")
     else:
-        st.markdown("## 🔴 Hohes Risiko")
-        st.error("Das System fällt in eine hohe Risikoklasse. Unbedingt rechtliche Beratung und Maßnahmen erforderlich!")
+        st.success("🟢 Geringes Risiko. Keine besonderen Maßnahmen erforderlich.")
 
-    # Details
-    st.write("**Begründung:**", "; ".join(result.get("reasons", [])) or "Kontrollen wirken ausreichend.")
+    st.subheader(f"Ergebnis: {result['risk']}")
+    st.write("**Begründung:**", "; ".join(result["reasons"]) or "Kontrollen wirken ausreichend.")
     st.write("**Nächste Schritte:**")
-    for t in result.get("tasks", []):
+    for t in result["tasks"]:
         st.write("•", t)
 
-    # PDF-Export
-    pdf = create_report(result)
+    # ---------- PDF-Export ----------
+    pdf = create_report(result, logo_path="assets/Logo.png")
     st.download_button(
         "📄 Ergebnis als PDF herunterladen",
         data=pdf,
@@ -90,22 +80,15 @@ if st.button("Prüfen"):
         mime="application/pdf"
     )
 
-    st.divider()
-    st.markdown("""
-    ### Ampel-Legende
-    - 🟢 **Grün**: Niedriges Risiko – keine oder wenige Vorgaben  
-    - 🟡 **Gelb**: Mittleres Risiko – Anforderungen prüfen und ggf. nachrüsten  
-    - 🔴 **Rot**: Hohes Risiko – strenge Vorgaben, rechtliche Beratung nötig
-    """)
+st.divider()
 
 # ---------- Footer ----------
 st.markdown("""
 <hr/>
-<div style='font-size: 13px; color:#64748B;'>
-  © 2025 KN-AI-Solutions ·
+<div style='font-size: 13px; color:#64748B; text-align:center;'>
+  © 2025 KN-AI-Solutions · 
   <a href='https://kn-ai-solutions.com/impressum/' target='_blank'>Impressum</a> ·
   <a href='https://kn-ai-solutions.com/datenschutz/' target='_blank'>Datenschutz</a> ·
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
-
