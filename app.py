@@ -1,23 +1,42 @@
+# app.py — zentriertes, großes Logo + Ampel + PDF
+
 import streamlit as st
-from PIL import Image
+from pathlib import Path
 from logic.rules import assess
 from logic.report import create_report
 
-# Seitenkonfiguration
+# ---------- Seiteneinstellungen ----------
+# Falls dein Logo-Name anders ist, unten im "find_logo()" anpassen
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon="assets/Logo.png",
+    page_icon=None,   # optional: setze hier str(find_logo()) falls du ein Favicon willst
     layout="centered"
 )
 
+def find_logo():
+    """Liefert den existierenden Logopfad (Logo.png oder logo.png) oder None."""
+    for p in [Path("assets/Logo.png"), Path("assets/logo.png")]:
+        if p.exists():
+            return p
+    return None
+
 # ---------- Branding: Logo + Titel ----------
+logo_path = find_logo()
+# Mittels 3-Spalten-Layout das Logo sauber zentrieren
+if logo_path:
+    col_l, col_c, col_r = st.columns([1, 2, 1])
+    with col_c:
+        # Breite nach Bedarf anpassen (z. B. 260-320)
+        st.image(str(logo_path), width=260)
+else:
+    st.write("")
+
 st.markdown(
     """
-    <div style="text-align:center;">
-        <img src="app/assets/Logo.png" alt="Logo" style="width:200px; margin-bottom:15px;">
-        <h1>EU AI Act Quick-Check</h1>
-        <p style="color:gray;">Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
-    </div>
+    <h1 style="text-align:center; margin-bottom:0;">EU AI Act Quick-Check</h1>
+    <p style="text-align:center; color:#6b7280;">
+      Vereinfachte Selbstprüfung – keine Rechtsberatung.
+    </p>
     """,
     unsafe_allow_html=True
 )
@@ -42,7 +61,7 @@ human_oversight = st.checkbox("Menschliche Aufsicht geregelt")
 logging = st.checkbox("Protokollierung aktiviert")
 genai_label = st.checkbox("GenAI-Inhalte gekennzeichnet")
 
-# ---------- Auswertung ----------
+# ---------- Auswertung & Anzeige ----------
 if st.button("Prüfen"):
     result = assess(
         is_ai=(is_ai == "Ja"),
@@ -57,22 +76,27 @@ if st.button("Prüfen"):
         genai_label=genai_label
     )
 
-    # Ergebnisanzeige mit farbigem Ampelsystem
-    if result['risk'] == "Hoch":
-        st.error("🔴 Das System fällt in eine hohe Risikoklasse. Unbedingt rechtliche Beratung und Maßnahmen erforderlich!")
-    elif result['risk'] == "Mittel":
-        st.warning("🟠 Das System hat mittleres Risiko. Zusätzliche Kontrollen empfohlen.")
-    else:
-        st.success("🟢 Geringes Risiko. Keine besonderen Maßnahmen erforderlich.")
+    risk = result.get("risk", "").strip()
 
-    st.subheader(f"Ergebnis: {result['risk']}")
-    st.write("**Begründung:**", "; ".join(result["reasons"]) or "Kontrollen wirken ausreichend.")
+    # Ampel-Heading
+    if risk.lower().startswith("hoch"):
+        st.markdown("## 🔴 Hohes Risiko")
+        st.error("Das System fällt in eine hohe Risikoklasse. Unbedingt rechtliche Beratung und Maßnahmen erforderlich!")
+    elif risk.lower().startswith("mittel"):
+        st.markdown("## 🟡 Mittleres Risiko")
+        st.warning("Es bestehen einige Anforderungen. Bitte prüfen Sie die Pflichten nach EU AI Act genauer.")
+    else:
+        st.markdown("## 🟢 Niedriges Risiko")
+        st.info("Das System ist weitgehend unkritisch. Behalten Sie gesetzliche Änderungen im Blick.")
+
+    # Details
+    st.write("**Begründung:**", "; ".join(result.get("reasons", [])) or "Kontrollen wirken ausreichend.")
     st.write("**Nächste Schritte:**")
-    for t in result["tasks"]:
+    for t in result.get("tasks", []):
         st.write("•", t)
 
     # ---------- PDF-Export ----------
-    pdf = create_report(result, logo_path="assets/Logo.png")
+    pdf = create_report(result)  # report.py findet das Logo selbst
     st.download_button(
         "📄 Ergebnis als PDF herunterladen",
         data=pdf,
@@ -80,7 +104,13 @@ if st.button("Prüfen"):
         mime="application/pdf"
     )
 
-st.divider()
+    st.divider()
+    st.markdown("""
+    ### Ampel-Legende
+    - 🟢 **Grün**: Niedriges Risiko – keine oder wenige Vorgaben  
+    - 🟡 **Gelb**: Mittleres Risiko – Anforderungen prüfen und ggf. nachrüsten  
+    - 🔴 **Rot**: Hohes Risiko – strenge Vorgaben, rechtliche Beratung nötig
+    """)
 
 # ---------- Footer ----------
 st.markdown("""
