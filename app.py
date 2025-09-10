@@ -1,17 +1,17 @@
 import streamlit as st
-from Logik.rules import assess   # angepasst: "Logik" statt "logic"
+from Logik.rules import assess   # passt zu deinem Ordner "Logik"
 
 # Seitenkonfiguration
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon="Vermögenswerte/logo.png",  # Logo als Favicon (optional)
+    page_icon="Vermögenswerte/logo.png",  # Logo auch als Favicon (optional)
     layout="centered"
 )
 
-# Logo + Titel
+# Logo + Titel nebeneinander
 col_logo, col_title = st.columns([1, 5])
 with col_logo:
-    st.image("Vermögenswerte/logo.png", width=80)  # angepasst: "Vermögenswerte"
+    st.image("Vermögenswerte/logo.png", width=80)  # dein Logo aus dem Ordner "Vermögenswerte"
 with col_title:
     st.title("EU AI Act Quick-Check")
     st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
@@ -56,7 +56,7 @@ if st.button("Prüfen"):
 
 st.divider()
 
-# Footer (Branding)
+# Footer
 st.markdown("""
 <hr/>
 <div style='font-size: 13px; color:#64748B;'>
