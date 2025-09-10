@@ -5,6 +5,11 @@ from pathlib import Path
 from logic.rules import assess
 from logic.report import create_report
 
+# ========= EINSTELLUNGEN (URLs & Kontakt) =========
+IMPRESSUM_URL   = "https://kn-ai-solutions.com/impressum/"
+DATENSCHUTZ_URL = "https://kn-ai-solutions.com/datenschutz/"
+CONTACT_EMAIL   = "info@kn-ai-solutions.com"
+
 # ----------------------------------------
 # Hilfsfunktion: Logo finden
 # ----------------------------------------
@@ -14,6 +19,8 @@ def load_logo():
         Path("assets/Logo.png"),
         Path("assets/logo.jpg"),
         Path("assets/Logo.jpg"),
+        Path("assets/logo.jpeg"),
+        Path("assets/Logo.jpeg"),
     ]
     for p in candidates:
         if p.exists():
@@ -33,11 +40,10 @@ st.set_page_config(
 # ---------- Branding ----------
 logo_img = load_logo()
 if logo_img:
-    st.image(logo_img, use_container_width=True)  # jetzt breit zentriert
+    st.image(logo_img, use_container_width=True)
 
 st.title("EU AI Act Quick-Check")
 st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
-
 st.write("")
 
 # ---------- Eingabefelder ----------
@@ -79,8 +85,13 @@ if st.button("Prüfen"):
     for t in result["tasks"]:
         st.write("•", t)
 
-    # ---------- PDF-Export ----------
-    pdf = create_report(result)
+    # ---------- PDF-Export (mit klickbarem Footer) ----------
+    pdf = create_report(
+        result,
+        impressum_url=IMPRESSUM_URL,
+        datenschutz_url=DATENSCHUTZ_URL,
+        contact_email=CONTACT_EMAIL,
+    )
     st.download_button(
         "📄 Ergebnis als PDF herunterladen",
         data=pdf,
@@ -91,13 +102,12 @@ if st.button("Prüfen"):
 st.divider()
 
 # ---------- Footer ----------
-st.markdown("""
+st.markdown(f"""
 <hr/>
 <div style='font-size: 13px; color:#64748B; text-align:center;'>
   © 2025 KN-AI-Solutions · 
-  <a href='https://deine-domain.de/impressum' target='_blank'>Impressum</a> ·
-  <a href='https://deine-domain.de/datenschutz' target='_blank'>Datenschutz</a> ·
-  Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
+  <a href='{IMPRESSUM_URL}' target='_blank'>Impressum</a> ·
+  <a href='{DATENSCHUTZ_URL}' target='_blank'>Datenschutz</a> ·
+  Kontakt: <a href='mailto:{CONTACT_EMAIL}'>{CONTACT_EMAIL}</a>
 </div>
 """, unsafe_allow_html=True)
-
