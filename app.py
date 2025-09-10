@@ -11,23 +11,23 @@ st.set_page_config(
 )
 
 # ---------- Branding: Logo + Titel ----------
-st.markdown("<br>", unsafe_allow_html=True)  # Abstand nach oben
-
-try:
-    logo = Image.open("assets/logo.png")
-    st.image(logo, width=600)  # <-- sehr groß: 600px Breite
-except Exception:
-    st.caption(" ")  # Platzhalter, falls kein Logo vorhanden ist
-
 st.markdown(
     """
-    <h1 style='text-align: center;'>EU AI Act Quick-Check</h1>
-    <p style='text-align: center; color: grey;'>Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
+    <div style="text-align: center;">
+        <img src="assets/logo.png" width="300">
+    </div>
     """,
     unsafe_allow_html=True
 )
 
-st.write("")
+st.markdown(
+    """
+    <h1 style="text-align: center;">EU AI Act Quick-Check</h1>
+    <p style="text-align: center; color: gray;">Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # ---------- Eingabefelder ----------
 is_ai = st.radio("Ist es ein KI-System?", ["Nein", "Ja"])
