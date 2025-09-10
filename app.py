@@ -15,11 +15,10 @@ st.markdown("<br>", unsafe_allow_html=True)  # Abstand nach oben
 
 try:
     logo = Image.open("assets/logo.png")
-    st.image(logo, width=400)  # <-- größer: 400px Breite
+    st.image(logo, width=600)  # <-- sehr groß: 600px Breite
 except Exception:
     st.caption(" ")  # Platzhalter, falls kein Logo vorhanden ist
 
-# Titel mittig unter dem Logo
 st.markdown(
     """
     <h1 style='text-align: center;'>EU AI Act Quick-Check</h1>
@@ -62,7 +61,27 @@ if st.button("Prüfen"):
         logging=logging,
         genai_label=genai_label
     )
-    st.subheader(f"Ergebnis: {result['risk']}")
+
+    # Ampelanzeige
+    risk = result["risk"].lower()
+    if "hoch" in risk:
+        color = "red"
+    elif "mittel" in risk:
+        color = "orange"
+    else:
+        color = "green"
+
+    st.markdown(
+        f"""
+        <div style='text-align:center;'>
+            <div style='width:80px; height:80px; border-radius:50%; background-color:{color}; display:inline-block;'></div>
+            <h2 style='color:{color};'>Risiko: {result['risk']}</h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Details
     st.write("**Begründung:**", "; ".join(result["reasons"]) or "Kontrollen wirken ausreichend.")
     st.write("**Nächste Schritte:**")
     for t in result["tasks"]:
