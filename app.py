@@ -11,16 +11,22 @@ st.set_page_config(
 )
 
 # ---------- Branding: Logo + Titel ----------
-st.markdown("<br>", unsafe_allow_html=True)  # etwas Abstand nach oben
+st.markdown("<br>", unsafe_allow_html=True)  # Abstand nach oben
 
 try:
     logo = Image.open("assets/logo.png")
-    st.image(logo, width=250)  # <-- Größe angepasst (größer!)
+    st.image(logo, width=400)  # <-- größer: 400px Breite
 except Exception:
     st.caption(" ")  # Platzhalter, falls kein Logo vorhanden ist
 
-st.title("EU AI Act Quick-Check")
-st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
+# Titel mittig unter dem Logo
+st.markdown(
+    """
+    <h1 style='text-align: center;'>EU AI Act Quick-Check</h1>
+    <p style='text-align: center; color: grey;'>Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
+    """,
+    unsafe_allow_html=True
+)
 
 st.write("")
 
