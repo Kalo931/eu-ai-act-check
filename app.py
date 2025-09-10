@@ -1,11 +1,12 @@
 import streamlit as st
 from PIL import Image
-from logic.rules import assess   # Ordnername muss "logic" heißen
+from logic.rules import assess
+from logic.report import create_report
 
 # Seitenkonfiguration
 st.set_page_config(
     page_title="EU AI Act Quick-Check",
-    page_icon=None,  # Optional: "assets/logo.png", wenn dein Logo hochgeladen ist
+    page_icon=None,  # Optional: "assets/logo.png"
     layout="centered"
 )
 
@@ -14,17 +15,16 @@ col_logo, col_title = st.columns([1, 5])
 
 with col_logo:
     try:
-        # Logo anzeigen (wenn vorhanden)
         logo = Image.open("assets/logo.png")
         st.image(logo, width=80)
     except Exception:
-        st.caption(" ")  # Platzhalter, falls kein Logo gefunden wird
+        st.caption(" ")  # Platzhalter, falls kein Logo vorhanden ist
 
 with col_title:
     st.title("EU AI Act Quick-Check")
     st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
 
-st.write("")  # Abstand
+st.write("")
 
 # ---------- Eingabefelder ----------
 is_ai = st.radio("Ist es ein KI-System?", ["Nein", "Ja"])
@@ -64,6 +64,15 @@ if st.button("Prüfen"):
     for t in result["tasks"]:
         st.write("•", t)
 
+    # ---------- PDF-Export ----------
+    pdf = create_report(result)
+    st.download_button(
+        "📄 Ergebnis als PDF herunterladen",
+        data=pdf,
+        file_name="EU_AI_Act_QuickCheck.pdf",
+        mime="application/pdf"
+    )
+
 st.divider()
 
 # ---------- Footer ----------
@@ -75,4 +84,3 @@ st.markdown("""
   Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
 </div>
 """, unsafe_allow_html=True)
-
