@@ -1,13 +1,31 @@
 import streamlit as st
-from logic.rules import assess
+from Logik.rules import assess   # angepasst: "Logik" statt "logic"
 
-st.set_page_config(page_title="EU AI Act Quick-Check", page_icon="✅")
-st.title("EU AI Act Quick-Check")
-st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
+# Seitenkonfiguration
+st.set_page_config(
+    page_title="EU AI Act Quick-Check",
+    page_icon="Vermögenswerte/logo.png",  # Logo als Favicon (optional)
+    layout="centered"
+)
 
+# Logo + Titel
+col_logo, col_title = st.columns([1, 5])
+with col_logo:
+    st.image("Vermögenswerte/logo.png", width=80)  # angepasst: "Vermögenswerte"
+with col_title:
+    st.title("EU AI Act Quick-Check")
+    st.caption("Vereinfachte Selbstprüfung – keine Rechtsberatung.")
+
+# Eingabefelder
 is_ai = st.radio("Ist es ein KI-System?", ["Nein","Ja"])
-use_case = st.selectbox("Einsatzbereich", ["Bildung","HR/Bewerbung","Kredit/Finanzen","Sicherheit/Überwachung","Biometrisch","Medizin/Gesundheit","Sonstiges"])
-sensitive = st.multiselect("Datenarten", ["Personenbezogen","Gesundheit","Kinder/Jugendliche","Keine/Anonymisiert"])
+use_case = st.selectbox("Einsatzbereich", [
+    "Bildung","HR/Bewerbung","Kredit/Finanzen",
+    "Sicherheit/Überwachung","Biometrisch",
+    "Medizin/Gesundheit","Sonstiges"
+])
+sensitive = st.multiselect("Datenarten", [
+    "Personenbezogen","Gesundheit","Kinder/Jugendliche","Keine/Anonymisiert"
+])
 biometric_remote = st.checkbox("Biometrische Fernidentifikation (live/remote)")
 auto_scoring = st.checkbox("Automatisierte Bewertung (Aufnahme/HR/Kredit/Noten)")
 critical_infra = st.checkbox("Kritische Infrastruktur")
@@ -16,6 +34,7 @@ human_oversight = st.checkbox("Menschliche Aufsicht geregelt")
 logging = st.checkbox("Protokollierung aktiviert")
 genai_label = st.checkbox("GenAI-Inhalte gekennzeichnet")
 
+# Button + Ergebnis
 if st.button("Prüfen"):
     result = assess(
         is_ai = (is_ai=="Ja"),
@@ -36,4 +55,13 @@ if st.button("Prüfen"):
         st.write("•", t)
 
 st.divider()
-st.caption("© Tolga / Ghost – v0.1")
+
+# Footer (Branding)
+st.markdown("""
+<hr/>
+<div style='font-size: 13px; color:#64748B;'>
+  © 2025 KN-AI-Solutions · <a href='https://deine-domain.de/impressum' target='_blank'>Impressum</a> ·
+  <a href='https://deine-domain.de/datenschutz' target='_blank'>Datenschutz</a> ·
+  Kontakt: <a href='mailto:info@kn-ai-solutions.com'>info@kn-ai-solutions.com</a>
+</div>
+""", unsafe_allow_html=True)
