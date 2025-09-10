@@ -17,25 +17,18 @@ def find_logo():
             return p
     return None
 
-# ---------- Branding ----------
-logo_path = find_logo()
-if logo_path:
-    # Drei Spalten, Logo in der Mitte
-    col_l, col_c, col_r = st.columns([1, 3, 1])
-    with col_c:
-        st.image(str(logo_path), width=400)  # << hier kannst du die Größe ändern (z. B. 300, 350, 400)
-else:
-    st.write("")
-
+# ---------- Branding: Logo + Titel ----------
 st.markdown(
     """
-    <h1 style="text-align:center; margin-bottom:0;">EU AI Act Quick-Check</h1>
-    <p style="text-align:center; color:#6b7280;">
-      Vereinfachte Selbstprüfung – keine Rechtsberatung.
-    </p>
+    <div style="text-align: center;">
+        <img src="assets/Logo.png" alt="Logo" style="width: 400px; margin-bottom: 20px;">
+        <h1>EU AI Act Quick-Check</h1>
+        <p style="color: #64748B; font-size:18px;">Vereinfachte Selbstprüfung – keine Rechtsberatung.</p>
+    </div>
     """,
     unsafe_allow_html=True
 )
+
 
 st.write("")
 
